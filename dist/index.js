@@ -1,6 +1,97 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 419:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.themeHeaderNames = exports.pluginHeaderNames = exports.headerMap = void 0;
+exports.headerMap = {
+    contributors: 'Contributors',
+    donate: 'Donate link',
+    tags: 'Tags',
+    requires: 'Requires at least',
+    tested: 'Tested up to',
+    stable: 'Stable tag'
+};
+exports.pluginHeaderNames = {
+    name: 'Plugin Name',
+    pluginURI: 'Plugin URI',
+    version: 'Version',
+    description: 'Description',
+    author: 'Author',
+    authorURI: 'Author URI',
+    textDomain: 'Text Domain',
+    domainPath: 'Domain Path',
+    network: 'Network'
+};
+exports.themeHeaderNames = {
+    name: 'Theme Name',
+    themeURI: 'Theme URI',
+    description: 'Description',
+    author: 'Author',
+    authorURI: 'Author URI',
+    version: 'Version',
+    template: 'Template',
+    status: 'Status',
+    tags: 'Tags',
+    textDomain: 'Text Domain',
+    domainPath: 'Domain Path',
+    detailsURI: 'Details URI'
+};
+
+
+/***/ }),
+
+/***/ 461:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getFileHeaders = void 0;
+/**
+ * Parse the file contents to retrieve its metadata.
+ *
+ * Searches for metadata for a file, such as a plugin or theme. Each piece of
+ * metadata must be on its own line. For a field spanning multiple lines, it
+ * must not have any newlines or only parts of it will be displayed.
+ *
+ * @param fileContent {String} Data to be parsed
+ * @param headerMap {StringArray} The list of headers to look for
+ *
+ * @returns An array of header meta values
+ */
+function getFileHeaders(fileContent, headerMap) {
+    if (Object.keys(headerMap).length === 0) {
+        throw new Error('Must provide a valid header map');
+    }
+    const headers = [];
+    // Support systems that use CR as a line ending.
+    fileContent = fileContent.replace(/(?:\r)/g, '\n');
+    for (const key in headerMap) {
+        const value = headerMap[key];
+        const regex = new RegExp(`^.*\\/\\*\\*[\\s\\S]*${value}:\\s*(.*)\\n?`, 'im');
+        const match = fileContent.match(regex);
+        if (match) {
+            const meta = {};
+            meta[key] = match[1].trim();
+            headers.push(meta);
+        }
+    }
+    return headers;
+}
+exports.getFileHeaders = getFileHeaders;
+/*
+export function getThemeHeaders() {
+
+}*/
+
+
+/***/ }),
+
 /***/ 109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -34,18 +125,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const wait_1 = __nccwpck_require__(817);
+const fs_1 = __importDefault(__nccwpck_require__(747));
+const extension_meta_1 = __nccwpck_require__(461);
+const configuration_1 = __nccwpck_require__(419);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-            core.debug(new Date().toTimeString());
-            yield (0, wait_1.wait)(parseInt(ms, 10));
-            core.debug(new Date().toTimeString());
-            core.setOutput('time', new Date().toTimeString());
+            const filePath = core.getInput('inputFile');
+            // Check if File Exists
+            if (!fs_1.default.existsSync(filePath)) {
+                core.setFailed(`File ${filePath} does not exist`);
+            }
+            fs_1.default.readFile(filePath, 'utf8', (err, data) => {
+                if (err)
+                    throw err;
+                const headers = (0, extension_meta_1.getFileHeaders)(data, configuration_1.headerMap);
+                //@ts-ignore
+                core.debug(headers);
+            });
+            core.setOutput('filePath', filePath);
         }
         catch (error) {
             if (error instanceof Error)
@@ -54,37 +157,6 @@ function run() {
     });
 }
 run();
-
-
-/***/ }),
-
-/***/ 817:
-/***/ (function(__unused_webpack_module, exports) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = void 0;
-function wait(milliseconds) {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise(resolve => {
-            if (isNaN(milliseconds)) {
-                throw new Error('milliseconds not a number');
-            }
-            setTimeout(() => resolve('done!'), milliseconds);
-        });
-    });
-}
-exports.wait = wait;
 
 
 /***/ }),

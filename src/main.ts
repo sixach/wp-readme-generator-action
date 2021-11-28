@@ -1,16 +1,25 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import fs from 'fs'
+import {getFileHeaders} from './extension-meta'
+import {headerMap} from './common/configuration'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const filePath: string = core.getInput('inputFile')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    // Check if File Exists
+    if (!fs.existsSync(filePath)) {
+      core.setFailed(`File ${filePath} does not exist`)
+    }
 
-    core.setOutput('time', new Date().toTimeString())
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) throw err
+      const headers = getFileHeaders(data, headerMap)
+      //@ts-ignore
+      core.debug(headers)
+    })
+
+    core.setOutput('filePath', filePath)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
