@@ -1,12 +1,14 @@
 import {MetaProperty} from '../extension-meta'
 
-export const headerMap: MetaProperty = {
+export const defaultHeaderMap: MetaProperty = {
   contributors: 'Contributors',
   donate: 'Donate link',
   tags: 'Tags',
   requires: 'Requires at least',
   tested: 'Tested up to',
-  stable: 'Stable tag'
+  stable: 'Stable tag',
+  license: 'License',
+  licenseURI: 'License URI'
 }
 
 export const pluginHeaderNames: MetaProperty = {
@@ -18,7 +20,8 @@ export const pluginHeaderNames: MetaProperty = {
   authorURI: 'Author URI',
   textDomain: 'Text Domain',
   domainPath: 'Domain Path',
-  network: 'Network'
+  network: 'Network',
+  ...defaultHeaderMap
 }
 
 export const themeHeaderNames: MetaProperty = {
@@ -30,8 +33,8 @@ export const themeHeaderNames: MetaProperty = {
   version: 'Version',
   template: 'Template',
   status: 'Status',
-  tags: 'Tags',
   textDomain: 'Text Domain',
   domainPath: 'Domain Path',
-  detailsURI: 'Details URI'
+  detailsURI: 'Details URI',
+  ...defaultHeaderMap
 }

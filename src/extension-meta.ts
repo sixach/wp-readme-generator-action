@@ -1,4 +1,5 @@
-import {pluginHeaderNames, themeHeaderNames} from './common/configuration'
+import * as core from '@actions/core'
+import {pluginHeaderNames, themeHeaderNames} from './common/names'
 import fs from 'fs'
 import path from 'path'
 import {stat} from 'fs/promises'
@@ -154,4 +155,30 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
   }
 
   throw new Error('Not a theme or plugin')
+}
+
+/**
+ * Detect project type and then call appropriate function to get theme/plugin meta.
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {MetaProperty} Parsed meta properties of the theme/plugin
+ */
+export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
+  let meta: MetaProperty = {}
+
+  try {
+    const project = await detectProjectType(dirPath)
+    const fileContent = fs.readFileSync(project.file, 'utf8')
+
+    if (project.type === 'theme') {
+      meta = getThemeHeaders(fileContent)
+    }
+    if (project.type === 'plugin') {
+      meta = getPluginHeaders(fileContent)
+    }
+  } catch (error) {
+    if (error instanceof Error) core.setFailed(error.message)
+  }
+
+  return meta
 }

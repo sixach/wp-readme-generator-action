@@ -1,12 +1,12 @@
 import * as core from '@actions/core'
 //import fs from 'fs'
-import {detectProjectType} from './extension-meta'
+import {readProjectMeta} from './extension-meta'
 //import {headerMap} from './common/configuration'
 
 async function run(): Promise<void> {
   try {
     const dirPath: string = core.getInput('dirPath')
-    const project = await detectProjectType(dirPath)
+    const project = await readProjectMeta(dirPath)
     //@ts-ignore
     core.debug(project)
     core.setOutput('dirPath', dirPath)

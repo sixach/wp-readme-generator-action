@@ -1,46 +1,25 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 419:
+/***/ 68:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.themeHeaderNames = exports.pluginHeaderNames = exports.headerMap = void 0;
-exports.headerMap = {
+exports.themeHeaderNames = exports.pluginHeaderNames = exports.defaultHeaderMap = void 0;
+exports.defaultHeaderMap = {
     contributors: 'Contributors',
     donate: 'Donate link',
     tags: 'Tags',
     requires: 'Requires at least',
     tested: 'Tested up to',
-    stable: 'Stable tag'
+    stable: 'Stable tag',
+    license: 'License',
+    licenseURI: 'License URI'
 };
-exports.pluginHeaderNames = {
-    name: 'Plugin Name',
-    pluginURI: 'Plugin URI',
-    version: 'Version',
-    description: 'Description',
-    author: 'Author',
-    authorURI: 'Author URI',
-    textDomain: 'Text Domain',
-    domainPath: 'Domain Path',
-    network: 'Network'
-};
-exports.themeHeaderNames = {
-    name: 'Theme Name',
-    themeURI: 'Theme URI',
-    description: 'Description',
-    author: 'Author',
-    authorURI: 'Author URI',
-    version: 'Version',
-    template: 'Template',
-    status: 'Status',
-    tags: 'Tags',
-    textDomain: 'Text Domain',
-    domainPath: 'Domain Path',
-    detailsURI: 'Details URI'
-};
+exports.pluginHeaderNames = Object.assign({ name: 'Plugin Name', pluginURI: 'Plugin URI', version: 'Version', description: 'Description', author: 'Author', authorURI: 'Author URI', textDomain: 'Text Domain', domainPath: 'Domain Path', network: 'Network' }, exports.defaultHeaderMap);
+exports.themeHeaderNames = Object.assign({ name: 'Theme Name', themeURI: 'Theme URI', description: 'Description', author: 'Author', authorURI: 'Author URI', version: 'Version', template: 'Template', status: 'Status', textDomain: 'Text Domain', domainPath: 'Domain Path', detailsURI: 'Details URI' }, exports.defaultHeaderMap);
 
 
 /***/ }),
@@ -50,6 +29,25 @@ exports.themeHeaderNames = {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -63,8 +61,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = void 0;
-const configuration_1 = __nccwpck_require__(419);
+exports.readProjectMeta = exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = void 0;
+const core = __importStar(__nccwpck_require__(186));
+const names_1 = __nccwpck_require__(68);
 const fs_1 = __importDefault(__nccwpck_require__(747));
 const path_1 = __importDefault(__nccwpck_require__(622));
 const promises_1 = __nccwpck_require__(225);
@@ -122,7 +121,7 @@ exports.getFileHeaders = getFileHeaders;
  * @returns {MetaProperty|null} See above for description
  */
 function getThemeHeaders(fileContent) {
-    const headers = getFileHeaders(fileContent, configuration_1.themeHeaderNames);
+    const headers = getFileHeaders(fileContent, names_1.themeHeaderNames);
     // If it doesn't have a name, it's probably not a valid theme.
     if (!headers.hasOwnProperty('name')) {
         throw new Error('Not a valid theme');
@@ -150,7 +149,7 @@ exports.getThemeHeaders = getThemeHeaders;
  * @returns {MetaProperty|null} See above for description
  */
 function getPluginHeaders(fileContent) {
-    const headers = getFileHeaders(fileContent, configuration_1.pluginHeaderNames);
+    const headers = getFileHeaders(fileContent, names_1.pluginHeaderNames);
     // If it doesn't have a name, it's probably not a valid plugin.
     if (!headers.hasOwnProperty('name')) {
         throw new Error('Not a valid plugin');
@@ -201,6 +200,33 @@ function detectProjectType(dirPath) {
     });
 }
 exports.detectProjectType = detectProjectType;
+/**
+ * Detect project type and then call appropriate function to get theme/plugin meta.
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {MetaProperty} Parsed meta properties of the theme/plugin
+ */
+function readProjectMeta(dirPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let meta = {};
+        try {
+            const project = yield detectProjectType(dirPath);
+            const fileContent = fs_1.default.readFileSync(project.file, 'utf8');
+            if (project.type === 'theme') {
+                meta = getThemeHeaders(fileContent);
+            }
+            if (project.type === 'plugin') {
+                meta = getPluginHeaders(fileContent);
+            }
+        }
+        catch (error) {
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
+        return meta;
+    });
+}
+exports.readProjectMeta = readProjectMeta;
 
 
 /***/ }),
@@ -247,7 +273,7 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const dirPath = core.getInput('dirPath');
-            const project = yield (0, extension_meta_1.detectProjectType)(dirPath);
+            const project = yield (0, extension_meta_1.readProjectMeta)(dirPath);
             //@ts-ignore
             core.debug(project);
             core.setOutput('dirPath', dirPath);
