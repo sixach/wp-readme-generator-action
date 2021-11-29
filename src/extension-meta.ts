@@ -1,7 +1,16 @@
+import * as core from '@actions/core'
 import {pluginHeaderNames, themeHeaderNames} from './common/configuration'
+import fs from 'fs'
+import path from 'path'
+import {stat} from 'fs/promises'
 
 export interface MetaProperty {
   [key: string]: string
+}
+
+export interface ProjectType {
+  type: 'theme' | 'plugin'
+  file: string
 }
 
 /**
@@ -102,4 +111,51 @@ export function getPluginHeaders(fileContent: string): MetaProperty {
   }
 
   return headers
+}
+
+/**
+ * Detects whether project type is plugin or theme by looking into directory content.
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {ProjectType} Detected package type. This can be either "plugin" or "theme".
+ */
+export async function detectProjectType(dirPath: string): Promise<ProjectType> {
+  // Check if directory exists
+  const stats = await stat(dirPath)
+  if (!fs.existsSync(dirPath) || !stats.isDirectory()) {
+    core.setFailed(
+      `Directory ${dirPath} does not exist or it's not a directory`
+    )
+  }
+
+  // Test if it's a theme or not
+  const cssFile = path.join(dirPath, 'style.css')
+  if (fs.existsSync(cssFile)) {
+    const entryStat = await stat(cssFile)
+    if (entryStat.isFile()) {
+      return {
+        type: 'theme',
+        file: cssFile
+      }
+    }
+  }
+
+  // Check every possible file name to see if it's a plugin or not
+  const pluginFiles = [
+    path.join(dirPath, `${path.basename(dirPath)}.php`),
+    path.join(dirPath, 'index.php')
+  ]
+  for (const filename of pluginFiles) {
+    if (fs.existsSync(filename)) {
+      const entryStat = await stat(filename)
+      if (entryStat.isFile()) {
+        return {
+          type: 'plugin',
+          file: filename
+        }
+      }
+    }
+  }
+
+  throw new Error('Not a theme or plugin')
 }

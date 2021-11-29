@@ -46,12 +46,48 @@ exports.themeHeaderNames = {
 /***/ }),
 
 /***/ 461:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getFileHeaders = void 0;
+exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = void 0;
+const core = __importStar(__nccwpck_require__(186));
+const configuration_1 = __nccwpck_require__(419);
+const fs_1 = __importDefault(__nccwpck_require__(747));
+const path_1 = __importDefault(__nccwpck_require__(622));
+const promises_1 = __nccwpck_require__(225);
 /**
  * Parse the file contents to retrieve its metadata.
  *
@@ -60,7 +96,7 @@ exports.getFileHeaders = void 0;
  * must not have any newlines or only parts of it will be displayed.
  *
  * @param fileContent {String} Data to be parsed
- * @param headerMap {StringArray} The list of headers to look for
+ * @param headerMap {MetaProperty} The list of headers to look for
  *
  * @returns An array of header meta values
  */
@@ -68,7 +104,7 @@ function getFileHeaders(fileContent, headerMap) {
     if (Object.keys(headerMap).length === 0) {
         throw new Error('Must provide a valid header map');
     }
-    const headers = [];
+    const headers = {};
     // Support systems that use CR as a line ending.
     fileContent = fileContent.replace(/(?:\r)/g, '\n');
     for (const key in headerMap) {
@@ -76,18 +112,116 @@ function getFileHeaders(fileContent, headerMap) {
         const regex = new RegExp(`^.*\\/\\*\\*[\\s\\S]*${value}:\\s*(.*)\\n?`, 'im');
         const match = fileContent.match(regex);
         if (match) {
-            const meta = {};
-            meta[key] = match[1].trim();
-            headers.push(meta);
+            headers[key] = match[1].trim();
         }
     }
     return headers;
 }
 exports.getFileHeaders = getFileHeaders;
-/*
-export function getThemeHeaders() {
-
-}*/
+/**
+ * Parse the theme stylesheet to retrieve its metadata headers.
+ *
+ * Adapted from the get_theme_data() function and the WP_Theme class in WordPress.
+ * Returns an array that contains the following:
+ * - 'name' - Name of the theme.
+ * - 'description' - Theme description.
+ * - 'author' - The author's name
+ * - 'authorURI' - The authors web site address.
+ * - 'version' - The theme version number.
+ * - 'themeURI' - Theme web site address.
+ * - 'template' - The slug of the parent theme. Only applies to child themes.
+ * - 'status' - Unknown. Included for completeness.
+ * - 'tags' - An array of tags.
+ * - 'textDomain' - Theme's text domain for localization.
+ * - 'domainPath' - Theme's relative directory path to .mo files.
+ *
+ * If the input string doesn't appear to contain a valid theme header, the function
+ * will return NULL.
+ *
+ * @param fileContent {String} Data to be parsed
+ * @returns {MetaProperty|null} See above for description
+ */
+function getThemeHeaders(fileContent) {
+    const headers = getFileHeaders(fileContent, configuration_1.themeHeaderNames);
+    // If it doesn't have a name, it's probably not a valid theme.
+    if (!headers.hasOwnProperty('name')) {
+        throw new Error('Not a valid theme');
+    }
+    return headers;
+}
+exports.getThemeHeaders = getThemeHeaders;
+/**
+ * Parse the plugin contents to retrieve plugin's metadata headers.
+ *
+ * Adapted from the get_plugin_data() function used by WordPress.
+ * Returns an array that contains the following:
+ * - 'name' - Name of the plugin.
+ * - 'title' - Title of the plugin and the link to the plugin's web site.
+ * - 'description' - Description of what the plugin does and/or notes from the author.
+ * - 'author' - The author's name.
+ * - 'authorURI' - The author's web site address.
+ * - 'version' - The plugin version number.
+ * - 'pluginURI' - Plugin web site address.
+ * - 'textDomain' - Plugin's text domain for localization.
+ * - 'domainPath' - Plugin's relative directory path to .mo files.
+ * - 'network' - Boolean. Whether the plugin can only be activated network wide.\
+ *
+ * @param fileContent {String} Data to be parsed
+ * @returns {MetaProperty|null} See above for description
+ */
+function getPluginHeaders(fileContent) {
+    const headers = getFileHeaders(fileContent, configuration_1.pluginHeaderNames);
+    // If it doesn't have a name, it's probably not a valid plugin.
+    if (!headers.hasOwnProperty('name')) {
+        throw new Error('Not a valid plugin');
+    }
+    return headers;
+}
+exports.getPluginHeaders = getPluginHeaders;
+/**
+ * Detects whether project type is plugin or theme by looking into directory content.
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {ProjectType} Detected package type. This can be either "plugin" or "theme".
+ */
+function detectProjectType(dirPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Check if directory exists
+        const stats = yield (0, promises_1.stat)(dirPath);
+        if (!fs_1.default.existsSync(dirPath) || !stats.isDirectory()) {
+            core.setFailed(`Directory ${dirPath} does not exist or it's not a directory`);
+        }
+        // Test if it's a theme or not
+        const cssFile = path_1.default.join(dirPath, 'style.css');
+        if (fs_1.default.existsSync(cssFile)) {
+            const entryStat = yield (0, promises_1.stat)(cssFile);
+            if (entryStat.isFile()) {
+                return {
+                    type: 'theme',
+                    file: cssFile
+                };
+            }
+        }
+        // Check every possible file name to see if it's a plugin or not
+        const pluginFiles = [
+            path_1.default.join(dirPath, `${path_1.default.basename(dirPath)}.php`),
+            path_1.default.join(dirPath, 'index.php')
+        ];
+        for (const filename of pluginFiles) {
+            if (fs_1.default.existsSync(filename)) {
+                const entryStat = yield (0, promises_1.stat)(filename);
+                if (entryStat.isFile()) {
+                    return {
+                        type: 'plugin',
+                        file: filename
+                    };
+                }
+            }
+        }
+        throw new Error('Not a theme or plugin');
+    });
+}
+exports.detectProjectType = detectProjectType;
 
 
 /***/ }),
@@ -125,30 +259,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const fs_1 = __importDefault(__nccwpck_require__(747));
+//import fs from 'fs'
 const extension_meta_1 = __nccwpck_require__(461);
-const configuration_1 = __nccwpck_require__(419);
+//import {headerMap} from './common/configuration'
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const filePath = core.getInput('inputFile');
+            const dirPath = core.getInput('dirPath');
+            const type = yield (0, extension_meta_1.detectProjectType)(dirPath);
+            //@ts-ignore
+            core.debug(type);
             // Check if File Exists
-            if (!fs_1.default.existsSync(filePath)) {
-                core.setFailed(`File ${filePath} does not exist`);
+            /*if (!fs.existsSync(dirPath)) {
+              core.setFailed(`File ${dirPath} does not exist`)
             }
-            fs_1.default.readFile(filePath, 'utf8', (err, data) => {
-                if (err)
-                    throw err;
-                const headers = (0, extension_meta_1.getFileHeaders)(data, configuration_1.headerMap);
-                //@ts-ignore
-                core.debug(headers);
-            });
-            core.setOutput('filePath', filePath);
+        
+            fs.readFile(dirPath, 'utf8', (err, data) => {
+              if (err) throw err
+              
+            })*/
+            core.setOutput('dirPath', dirPath);
         }
         catch (error) {
             if (error instanceof Error)
@@ -1736,6 +1868,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 225:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 

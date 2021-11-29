@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:     Sixa -  Test Header
+ * Plugin Name:     Sixa -  Test Plugin with Index.php
  * Description:     This is test description just to be tested in wp-readme-generator-action. 
  * Version:         1.1.5
  * Author:          sixa AG
