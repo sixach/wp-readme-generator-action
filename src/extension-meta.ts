@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import {pluginHeaderNames, themeHeaderNames} from './common/configuration'
 import fs from 'fs'
 import path from 'path'
@@ -121,11 +120,8 @@ export function getPluginHeaders(fileContent: string): MetaProperty {
  */
 export async function detectProjectType(dirPath: string): Promise<ProjectType> {
   // Check if directory exists
-  const stats = await stat(dirPath)
-  if (!fs.existsSync(dirPath) || !stats.isDirectory()) {
-    core.setFailed(
-      `Directory ${dirPath} does not exist or it's not a directory`
-    )
+  if (!fs.existsSync(dirPath)) {
+    throw new Error(`Directory ${dirPath} does not exist`)
   }
 
   // Test if it's a theme or not

@@ -64,3 +64,9 @@ test('Should throw an error - not a plugin or theme', async () => {
   const input: string = './__tests__/brokenTheme'
   await expect(detectProjectType(input)).rejects.toThrowError('Not a theme or plugin')
 })
+
+// Should throw an error if directory does not exist
+test('Should throw an error if directory does not exist', async () => {
+  const input: string = './__tests__/directoryDoesNotExist'
+  await expect(detectProjectType(input)).rejects.toThrowError(`Directory ${input} does not exist`)
+})
