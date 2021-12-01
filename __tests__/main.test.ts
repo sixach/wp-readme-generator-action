@@ -5,7 +5,7 @@ import {expect, test} from '@jest/globals'
 import {getFileHeaders, detectProjectType, readProjectMeta, MetaProperty} from '../src/extension-meta'
 
 test('Test if action works normally', () => {
-  process.env['INPUT_DIRPATH'] = './__tests__/testPlugin'
+  process.env['INPUT_DIRPATH'] = './__tests__/testTheme'
   const np = process.execPath
   const ip = path.join(__dirname, '..', 'lib', 'main.js')
   const options: cp.ExecFileSyncOptions = {
