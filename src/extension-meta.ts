@@ -194,7 +194,7 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
       const entryStat = fs.statSync(filename)
       if (entryStat.isFile()) {
         core.info(
-          `ℹ️ Plugin detected! Extracting info from PHP file ${cssFile}...`
+          `ℹ️ Plugin detected! Extracting info from PHP file ${filename}...`
         )
         return {
           type: 'plugin',
