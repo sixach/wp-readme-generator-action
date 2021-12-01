@@ -2,6 +2,7 @@ import * as process from 'process'
 import * as cp from 'child_process'
 import * as path from 'path'
 import {expect, test} from '@jest/globals'
+import {formatter} from '../src/templater'
 import {getFileHeaders, detectProjectType, readProjectMeta, MetaProperty} from '../src/extension-meta'
 
 test('Test if action works normally', () => {
@@ -117,4 +118,32 @@ test('Should return correct project meta - testTheme', async () => {
     requires: "WordPress 5.6",
     tested: "5.6"
   })
+})
+
+test('Should format README.md content properly', async () => {
+  const input: string = `
+# Heading 1
+A collection of React hooks to be used in WordPress life cycle
+
+## Heading 2
+Just a yet another heading
+  
+### Heading 3
+A yet another subtitle
+  
+#### Heading 4
+Last one`
+
+  await expect(formatter(input)).toStrictEqual(`
+= Heading 1 =
+A collection of React hooks to be used in WordPress life cycle
+
+== Heading 2 ==
+Just a yet another heading
+  
+=== Heading 3 ===
+A yet another subtitle
+  
+==== Heading 4 ====
+Last one`)
 })

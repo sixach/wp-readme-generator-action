@@ -304,7 +304,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.templater = void 0;
+exports.formatter = exports.templater = void 0;
 const mustache_1 = __importDefault(__nccwpck_require__(272));
 const template = `=== {{{name}}} ==={{#contributors}}
 Contributors: {{{contributors}}}{{/contributors}}{{#donate}}
@@ -317,17 +317,38 @@ License: {{{license}}}{{/license}}{{#licenseURI}}
 License URI: {{{licenseURI}}}{{/licenseURI}}
 
 {{{description}}}
-`;
+
+== Description ==
+
+{{{readme}}}`;
 /**
  * Render the readme.txt using mustache templating engine.
  *
- * @param vars Theme/plugin meta properties to be used
- * @returns rendered readme.txt with vars provided
+ * @param vars {Array} Theme/plugin meta properties to be used
+ * @returns {String} Rendered readme.txt with vars provided
  */
 function templater(vars) {
+    // Format the readme content if needed
+    if (vars.hasOwnProperty('readme')) {
+        vars.readme = formatter(vars.readme);
+    }
     return mustache_1.default.render(template, vars);
 }
 exports.templater = templater;
+/**
+ * Replace markdown headings with WordPress-style headings
+ *
+ * @param content {String} File content to be parsed
+ * @returns {String} Content with all headings replaced
+ */
+function formatter(content) {
+    return content
+        .replace(/^ *#[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '= $1 =$2')
+        .replace(/^ *##[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '== $1 ==$2')
+        .replace(/^ *###[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '=== $1 ===$2')
+        .replace(/^ *####[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '==== $1 ====$2');
+}
+exports.formatter = formatter;
 
 
 /***/ }),
