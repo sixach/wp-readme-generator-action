@@ -1,8 +1,7 @@
 import * as core from '@actions/core'
+import fs, {promises} from 'fs'
 import {pluginHeaderNames, themeHeaderNames} from './common/names'
-import fs from 'fs'
 import path from 'path'
-import {stat} from 'fs/promises'
 
 export interface MetaProperty {
   [key: string]: string
@@ -26,7 +25,7 @@ export async function getReadmeFilePath(dirPath: string): Promise<fs.PathLike> {
   ]
   for (const filename of readmeFiles) {
     if (fs.existsSync(filename)) {
-      const entryStat = await stat(filename)
+      const entryStat = await promises.stat(filename)
       if (entryStat.isFile()) {
         return filename
       }
@@ -173,7 +172,7 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
   // Test if it's a theme or not
   const cssFile = path.join(dirPath, 'style.css')
   if (fs.existsSync(cssFile)) {
-    const entryStat = await stat(cssFile)
+    const entryStat = await promises.stat(cssFile)
     if (entryStat.isFile()) {
       core.info(
         `ℹ️ theme detected! Extracting info from CSS file ${cssFile}...`
@@ -192,7 +191,7 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
   ]
   for (const filename of pluginFiles) {
     if (fs.existsSync(filename)) {
-      const entryStat = await stat(filename)
+      const entryStat = await promises.stat(filename)
       if (entryStat.isFile()) {
         core.info(
           `ℹ️ plugin detected! Extracting info from PHP file ${cssFile}...`
