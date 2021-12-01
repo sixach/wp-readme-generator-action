@@ -61,12 +61,40 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.readProjectMeta = exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = void 0;
+exports.readProjectMeta = exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = exports.getReadmeContent = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const names_1 = __nccwpck_require__(68);
 const fs_1 = __importDefault(__nccwpck_require__(747));
 const path_1 = __importDefault(__nccwpck_require__(622));
 const promises_1 = __nccwpck_require__(225);
+/**
+ * Reads the content of README.md file.
+ * The file name can be either README.md or readme.md (lowercase).
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {String} README.md content
+ */
+function getReadmeContent(dirPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Check possible file names of README.md
+        const readmeFiles = [
+            path_1.default.join(dirPath, `README.md`),
+            path_1.default.join(dirPath, 'readme.md')
+        ];
+        for (const filename of readmeFiles) {
+            if (fs_1.default.existsSync(filename)) {
+                const entryStat = yield (0, promises_1.stat)(filename);
+                if (entryStat.isFile()) {
+                    core.info(`👀 Reading the content of README.md...`);
+                    return fs_1.default.readFileSync(filename, 'utf8');
+                }
+            }
+        }
+        // Nothing found
+        return null;
+    });
+}
+exports.getReadmeContent = getReadmeContent;
 /**
  * Parse the file contents to retrieve its metadata.
  *
@@ -174,6 +202,7 @@ function detectProjectType(dirPath) {
         if (fs_1.default.existsSync(cssFile)) {
             const entryStat = yield (0, promises_1.stat)(cssFile);
             if (entryStat.isFile()) {
+                core.info(`ℹ️ theme detected! Extracting info from CSS file ${cssFile}...`);
                 return {
                     type: 'theme',
                     file: cssFile
@@ -189,6 +218,7 @@ function detectProjectType(dirPath) {
             if (fs_1.default.existsSync(filename)) {
                 const entryStat = yield (0, promises_1.stat)(filename);
                 if (entryStat.isFile()) {
+                    core.info(`ℹ️ plugin detected! Extracting info from PHP file ${cssFile}...`);
                     return {
                         type: 'plugin',
                         file: filename
@@ -218,6 +248,10 @@ function readProjectMeta(dirPath) {
             if (project.type === 'plugin') {
                 meta = getPluginHeaders(fileContent);
             }
+            // Read readme file content
+            const readme = yield getReadmeContent(dirPath);
+            if (readme)
+                meta.readme = readme;
         }
         catch (error) {
             if (error instanceof Error)

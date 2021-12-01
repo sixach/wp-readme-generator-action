@@ -14,6 +14,35 @@ export interface ProjectType {
 }
 
 /**
+ * Reads the content of README.md file.
+ * The file name can be either README.md or readme.md (lowercase).
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {String} README.md content
+ */
+export async function getReadmeContent(
+  dirPath: string
+): Promise<string | null> {
+  // Check possible file names of README.md
+  const readmeFiles = [
+    path.join(dirPath, `README.md`),
+    path.join(dirPath, 'readme.md')
+  ]
+  for (const filename of readmeFiles) {
+    if (fs.existsSync(filename)) {
+      const entryStat = await stat(filename)
+      if (entryStat.isFile()) {
+        core.info(`👀 Reading the content of README.md...`)
+        return fs.readFileSync(filename, 'utf8')
+      }
+    }
+  }
+
+  // Nothing found
+  return null
+}
+
+/**
  * Parse the file contents to retrieve its metadata.
  *
  * Searches for metadata for a file, such as a plugin or theme. Each piece of
@@ -130,6 +159,9 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
   if (fs.existsSync(cssFile)) {
     const entryStat = await stat(cssFile)
     if (entryStat.isFile()) {
+      core.info(
+        `ℹ️ theme detected! Extracting info from CSS file ${cssFile}...`
+      )
       return {
         type: 'theme',
         file: cssFile
@@ -146,6 +178,9 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
     if (fs.existsSync(filename)) {
       const entryStat = await stat(filename)
       if (entryStat.isFile()) {
+        core.info(
+          `ℹ️ plugin detected! Extracting info from PHP file ${cssFile}...`
+        )
         return {
           type: 'plugin',
           file: filename
@@ -176,6 +211,10 @@ export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
     if (project.type === 'plugin') {
       meta = getPluginHeaders(fileContent)
     }
+
+    // Read readme file content
+    const readme = await getReadmeContent(dirPath)
+    if (readme) meta.readme = readme
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
