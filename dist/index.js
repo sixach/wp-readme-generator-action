@@ -61,20 +61,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.readProjectMeta = exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = exports.getReadmeContent = void 0;
+exports.readProjectMeta = exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = exports.getReadmeContent = exports.getReadmeFilePath = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const names_1 = __nccwpck_require__(68);
 const fs_1 = __importDefault(__nccwpck_require__(747));
 const path_1 = __importDefault(__nccwpck_require__(622));
 const promises_1 = __nccwpck_require__(225);
 /**
- * Reads the content of README.md file.
- * The file name can be either README.md or readme.md (lowercase).
- *
- * @param dirPath {String} Path to the project directory
- * @returns {String} README.md content
+ * Helper function to find path to README file.
+ * @param dirPath {String} Directory where to look for readme file
+ * @returns {String|null} Path to README file if found, null otherwise
  */
-function getReadmeContent(dirPath) {
+function getReadmeFilePath(dirPath) {
     return __awaiter(this, void 0, void 0, function* () {
         // Check possible file names of README.md
         const readmeFiles = [
@@ -85,10 +83,29 @@ function getReadmeContent(dirPath) {
             if (fs_1.default.existsSync(filename)) {
                 const entryStat = yield (0, promises_1.stat)(filename);
                 if (entryStat.isFile()) {
-                    core.info(`👀 Reading the content of README.md...`);
-                    return fs_1.default.readFileSync(filename, 'utf8');
+                    return filename;
                 }
             }
+        }
+        // Nothing found
+        return '';
+    });
+}
+exports.getReadmeFilePath = getReadmeFilePath;
+/**
+ * Reads the content of README.md file.
+ * The file name can be either README.md or readme.md (lowercase).
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {String} README.md content
+ */
+function getReadmeContent(dirPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Try to find a readme file
+        const readmeFile = yield getReadmeFilePath(dirPath);
+        if (readmeFile) {
+            core.info(`👀 Reading the content of README.md...`);
+            return fs_1.default.readFileSync(readmeFile, 'utf8');
         }
         // Nothing found
         return null;
@@ -298,24 +315,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-const fs_1 = __importDefault(__nccwpck_require__(747));
 const extension_meta_1 = __nccwpck_require__(461);
+const fs_1 = __nccwpck_require__(747);
 const templater_1 = __nccwpck_require__(176);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const dirPath = core.getInput('dir_path');
+            const replace = core.getInput('replace');
             const vars = yield (0, extension_meta_1.readProjectMeta)(dirPath);
             const output = (0, templater_1.templater)(vars);
             // Write the resulting readme.txt
-            fs_1.default.writeFileSync(core.getInput('output_path'), output, {
+            (0, fs_1.writeFileSync)(core.getInput('output_path'), output, {
                 encoding: 'utf8'
             });
+            // Replace mode. Delete existing README.md?
+            if (replace === 'true') {
+                const readmeFile = yield (0, extension_meta_1.getReadmeFilePath)(dirPath);
+                if (readmeFile) {
+                    core.info(`❌ Replace mode active. Deleting README.md...`);
+                    (0, fs_1.unlinkSync)(readmeFile);
+                }
+            }
         }
         catch (error) {
             if (error instanceof Error)

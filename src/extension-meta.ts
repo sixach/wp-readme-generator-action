@@ -14,15 +14,11 @@ export interface ProjectType {
 }
 
 /**
- * Reads the content of README.md file.
- * The file name can be either README.md or readme.md (lowercase).
- *
- * @param dirPath {String} Path to the project directory
- * @returns {String} README.md content
+ * Helper function to find path to README file.
+ * @param dirPath {String} Directory where to look for readme file
+ * @returns {String|null} Path to README file if found, null otherwise
  */
-export async function getReadmeContent(
-  dirPath: string
-): Promise<string | null> {
+export async function getReadmeFilePath(dirPath: string): Promise<fs.PathLike> {
   // Check possible file names of README.md
   const readmeFiles = [
     path.join(dirPath, `README.md`),
@@ -32,10 +28,30 @@ export async function getReadmeContent(
     if (fs.existsSync(filename)) {
       const entryStat = await stat(filename)
       if (entryStat.isFile()) {
-        core.info(`👀 Reading the content of README.md...`)
-        return fs.readFileSync(filename, 'utf8')
+        return filename
       }
     }
+  }
+
+  // Nothing found
+  return ''
+}
+
+/**
+ * Reads the content of README.md file.
+ * The file name can be either README.md or readme.md (lowercase).
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {String} README.md content
+ */
+export async function getReadmeContent(
+  dirPath: string
+): Promise<string | null> {
+  // Try to find a readme file
+  const readmeFile = await getReadmeFilePath(dirPath)
+  if (readmeFile) {
+    core.info(`👀 Reading the content of README.md...`)
+    return fs.readFileSync(readmeFile, 'utf8')
   }
 
   // Nothing found
