@@ -45,7 +45,7 @@ Add the following step to your job.
     # Defaults to true
     replace: true
 
-    # Optional. Full path to the output file
+    # Optional. Relative path to the working directory
     # If you want to customize the path where readme.txt should be placed
     # Defaults to the current directory (`./readme.txt`)
     output_path: ./readme.txt

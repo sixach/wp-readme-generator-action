@@ -1,8 +1,8 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "wp-readme-generator-action",
+  "version": "1.0.0",
   "private": true,
-  "description": "TypeScript template action",
+  "description": "Action that generates WordPress flavored readme.txt from Theme/Plugin metadata",
   "main": "lib/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,21 +15,23 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git@github.com:sixach/wp-readme-generator-action.git"
   },
   "keywords": [
     "actions",
     "node",
-    "setup"
+    "setup",
+    "wordpress",
+    "readme"
   ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.6.0",
-    "@types/mustache": "^4.1.2",
     "mustache": "^4.2.0"
   },
   "devDependencies": {
+    "@types/mustache": "^4.1.2",
     "@types/node": "^16.11.11",
     "@typescript-eslint/parser": "^5.5.0",
     "@vercel/ncc": "^0.32.0",
