@@ -14,7 +14,7 @@ inputs:
     default: true
   output_path:
     description: 'Custom path where readme.txt should be placed'
-    default: '.'
+    default: './readme.txt'
 runs:
       using: 'node12'
       main: 'dist/index.js'
