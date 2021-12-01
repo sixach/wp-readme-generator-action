@@ -63,8 +63,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.readProjectMeta = exports.detectProjectType = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = exports.getReadmeContent = exports.getReadmeFilePath = void 0;
 const core = __importStar(__nccwpck_require__(186));
-const fs_1 = __importStar(__nccwpck_require__(147));
 const names_1 = __nccwpck_require__(68);
+const fs_1 = __importDefault(__nccwpck_require__(147));
 const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * Helper function to find path to README file.
@@ -80,7 +80,7 @@ function getReadmeFilePath(dirPath) {
         ];
         for (const filename of readmeFiles) {
             if (fs_1.default.existsSync(filename)) {
-                const entryStat = yield fs_1.promises.stat(filename);
+                const entryStat = fs_1.default.statSync(filename);
                 if (entryStat.isFile()) {
                     return filename;
                 }
@@ -216,7 +216,7 @@ function detectProjectType(dirPath) {
         // Test if it's a theme or not
         const cssFile = path_1.default.join(dirPath, 'style.css');
         if (fs_1.default.existsSync(cssFile)) {
-            const entryStat = yield fs_1.promises.stat(cssFile);
+            const entryStat = fs_1.default.statSync(cssFile);
             if (entryStat.isFile()) {
                 core.info(`ℹ️ theme detected! Extracting info from CSS file ${cssFile}...`);
                 return {
@@ -232,7 +232,7 @@ function detectProjectType(dirPath) {
         ];
         for (const filename of pluginFiles) {
             if (fs_1.default.existsSync(filename)) {
-                const entryStat = yield fs_1.promises.stat(filename);
+                const entryStat = fs_1.default.statSync(filename);
                 if (entryStat.isFile()) {
                     core.info(`ℹ️ plugin detected! Extracting info from PHP file ${cssFile}...`);
                     return {
