@@ -312,11 +312,10 @@ function run() {
             const dirPath = core.getInput('dir_path');
             const vars = yield (0, extension_meta_1.readProjectMeta)(dirPath);
             const output = (0, templater_1.templater)(vars);
-            fs_1.default.writeFileSync('readme.txt', output, {
+            // Write the resulting readme.txt
+            fs_1.default.writeFileSync(core.getInput('output_path'), output, {
                 encoding: 'utf8'
             });
-            core.debug(output);
-            core.setOutput('dir_path', dirPath);
         }
         catch (error) {
             if (error instanceof Error)
@@ -377,10 +376,9 @@ exports.templater = templater;
  */
 function formatter(content) {
     return content
-        .replace(/^ *#[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '= $1 =$2')
+        .replace(/^ *#[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '=== $1 ===$2')
         .replace(/^ *##[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '== $1 ==$2')
-        .replace(/^ *###[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '=== $1 ===$2')
-        .replace(/^ *####[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '==== $1 ====$2');
+        .replace(/^ *###[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '= $1 =$2');
 }
 exports.formatter = formatter;
 

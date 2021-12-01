@@ -40,8 +40,7 @@ export function templater(vars: MetaProperty): string {
  */
 export function formatter(content: string): string {
   return content
-    .replace(/^ *#[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '= $1 =$2')
+    .replace(/^ *#[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '=== $1 ===$2')
     .replace(/^ *##[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '== $1 ==$2')
-    .replace(/^ *###[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '=== $1 ===$2')
-    .replace(/^ *####[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '==== $1 ====$2')
+    .replace(/^ *###[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '= $1 =$2')
 }

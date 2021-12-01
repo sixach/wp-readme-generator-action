@@ -7,6 +7,7 @@ import {getFileHeaders, detectProjectType, readProjectMeta, MetaProperty} from '
 
 test('Test if action works normally', () => {
   process.env['INPUT_DIR_PATH'] = './__tests__/testTheme'
+  process.env['INPUT_OUTPUT_PATH'] = './__tests__/testTheme/readme.txt'
   const np = process.execPath
   const ip = path.join(__dirname, '..', 'lib', 'main.js')
   const options: cp.ExecFileSyncOptions = {
@@ -141,21 +142,15 @@ A collection of React hooks to be used in WordPress life cycle
 Just a yet another heading
   
 ### Heading 3
-A yet another subtitle
-  
-#### Heading 4
-Last one`
+A yet another subtitle`
 
   await expect(formatter(input)).toStrictEqual(`
-= Heading 1 =
+=== Heading 1 ===
 A collection of React hooks to be used in WordPress life cycle
 
 == Heading 2 ==
 Just a yet another heading
   
-=== Heading 3 ===
-A yet another subtitle
-  
-==== Heading 4 ====
-Last one`)
+= Heading 3 =
+A yet another subtitle`)
 })

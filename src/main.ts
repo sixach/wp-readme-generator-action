@@ -8,11 +8,10 @@ async function run(): Promise<void> {
     const dirPath: string = core.getInput('dir_path')
     const vars = await readProjectMeta(dirPath)
     const output = templater(vars)
-    fs.writeFileSync('readme.txt', output, {
+    // Write the resulting readme.txt
+    fs.writeFileSync(core.getInput('output_path'), output, {
       encoding: 'utf8'
     })
-    core.debug(output)
-    core.setOutput('dir_path', dirPath)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
