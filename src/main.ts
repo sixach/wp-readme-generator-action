@@ -5,14 +5,14 @@ import {templater} from './templater'
 
 async function run(): Promise<void> {
   try {
-    const dirPath: string = core.getInput('dirPath')
+    const dirPath: string = core.getInput('dir_path')
     const vars = await readProjectMeta(dirPath)
     const output = templater(vars)
     fs.writeFileSync('readme.txt', output, {
       encoding: 'utf8'
     })
     core.debug(output)
-    core.setOutput('dirPath', dirPath)
+    core.setOutput('dir_path', dirPath)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

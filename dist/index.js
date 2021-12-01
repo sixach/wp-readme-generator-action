@@ -275,14 +275,14 @@ const templater_1 = __nccwpck_require__(176);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const dirPath = core.getInput('dirPath');
+            const dirPath = core.getInput('dir_path');
             const vars = yield (0, extension_meta_1.readProjectMeta)(dirPath);
             const output = (0, templater_1.templater)(vars);
             fs_1.default.writeFileSync('readme.txt', output, {
                 encoding: 'utf8'
             });
             core.debug(output);
-            core.setOutput('dirPath', dirPath);
+            core.setOutput('dir_path', dirPath);
         }
         catch (error) {
             if (error instanceof Error)
