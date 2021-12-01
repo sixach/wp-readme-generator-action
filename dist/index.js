@@ -218,7 +218,7 @@ function detectProjectType(dirPath) {
         if (fs_1.default.existsSync(cssFile)) {
             const entryStat = fs_1.default.statSync(cssFile);
             if (entryStat.isFile()) {
-                core.info(`ℹ️ theme detected! Extracting info from CSS file ${cssFile}...`);
+                core.info(`ℹ️ Theme detected! Extracting info from CSS file ${cssFile}...`);
                 return {
                     type: 'theme',
                     file: cssFile
@@ -234,7 +234,7 @@ function detectProjectType(dirPath) {
             if (fs_1.default.existsSync(filename)) {
                 const entryStat = fs_1.default.statSync(filename);
                 if (entryStat.isFile()) {
-                    core.info(`ℹ️ plugin detected! Extracting info from PHP file ${cssFile}...`);
+                    core.info(`ℹ️ Plugin detected! Extracting info from PHP file ${cssFile}...`);
                     return {
                         type: 'plugin',
                         file: filename
@@ -317,22 +317,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const extension_meta_1 = __nccwpck_require__(461);
-const fs_1 = __nccwpck_require__(147);
+const utils_1 = __nccwpck_require__(918);
 const templater_1 = __nccwpck_require__(176);
+const fs_1 = __nccwpck_require__(147);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const dirPath = core.getInput('dir_path');
+            const projectDirPath = (0, utils_1.retrieveDirPath)(dirPath);
+            const outputPath = core.getInput('output_path');
             const replace = core.getInput('replace');
-            const vars = yield (0, extension_meta_1.readProjectMeta)(dirPath);
+            const vars = yield (0, extension_meta_1.readProjectMeta)(projectDirPath);
             const output = (0, templater_1.templater)(vars);
             // Write the resulting readme.txt
-            (0, fs_1.writeFileSync)(core.getInput('output_path'), output, {
-                encoding: 'utf8'
-            });
+            (0, utils_1.writeOutput)(projectDirPath, outputPath, output);
             // Replace mode. Delete existing README.md?
             if (replace === 'true') {
-                const readmeFile = yield (0, extension_meta_1.getReadmeFilePath)(dirPath);
+                const readmeFile = yield (0, extension_meta_1.getReadmeFilePath)(projectDirPath);
                 if (readmeFile) {
                     core.info(`❌ Replace mode active. Deleting README.md...`);
                     (0, fs_1.unlinkSync)(readmeFile);
@@ -403,6 +404,80 @@ function formatter(content) {
         .replace(/^ *###[ \t]+([^\n]+?) *#*[ \t]*(\n+|$)/gm, '= $1 =$2');
 }
 exports.formatter = formatter;
+
+
+/***/ }),
+
+/***/ 918:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.writeOutput = exports.retrieveDirPath = void 0;
+const core = __importStar(__nccwpck_require__(186));
+const path = __importStar(__nccwpck_require__(17));
+const fs_1 = __nccwpck_require__(147);
+/**
+ * Resolves the project path, relatively to the GITHUB_WORKSPACE
+ *
+ * @param providedPath {String} Provided path to plugin/theme
+ * @returns {String} Real path inside the Github workspace
+ */
+function retrieveDirPath(providedPath) {
+    let githubWorkspacePath = process.env['GITHUB_WORKSPACE'];
+    if (!githubWorkspacePath) {
+        throw new Error('GITHUB_WORKSPACE not defined');
+    }
+    githubWorkspacePath = path.resolve(githubWorkspacePath);
+    core.debug(`GITHUB_WORKSPACE = '${githubWorkspacePath}'`);
+    let dirPath = providedPath || '.';
+    dirPath = path.resolve(githubWorkspacePath, dirPath);
+    core.debug(`dir_path = '${dirPath}'`);
+    return dirPath;
+}
+exports.retrieveDirPath = retrieveDirPath;
+/**
+ * Writes the readme.txt to the given the file
+ *
+ * @param githubWorkspacePath {String} Current working directory
+ * @param outputFile {String} Relative/absolute path to readme.txt file
+ * @param readme {String} Readme.txt content
+ */
+function writeOutput(githubWorkspacePath, outputFile, readme) {
+    if (outputFile && readme) {
+        const outputPath = path.resolve(githubWorkspacePath, outputFile);
+        core.debug(`output_path = '${outputPath}'`);
+        try {
+            (0, fs_1.writeFileSync)(outputPath, readme, {
+                encoding: 'utf8'
+            });
+        }
+        catch (error /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
+            core.warning(`⚠️ Could not write the file to disk - ${error.message}`);
+        }
+    }
+}
+exports.writeOutput = writeOutput;
 
 
 /***/ }),

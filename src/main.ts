@@ -1,22 +1,24 @@
 import * as core from '@actions/core'
 import {getReadmeFilePath, readProjectMeta} from './extension-meta'
-import {unlinkSync, writeFileSync} from 'fs'
+import {retrieveDirPath, writeOutput} from './utils'
 import {templater} from './templater'
+import {unlinkSync} from 'fs'
 
 async function run(): Promise<void> {
   try {
     const dirPath: string = core.getInput('dir_path')
+    const projectDirPath = retrieveDirPath(dirPath)
+    const outputPath: string = core.getInput('output_path')
     const replace: string = core.getInput('replace')
-    const vars = await readProjectMeta(dirPath)
+
+    const vars = await readProjectMeta(projectDirPath)
     const output = templater(vars)
     // Write the resulting readme.txt
-    writeFileSync(core.getInput('output_path'), output, {
-      encoding: 'utf8'
-    })
+    writeOutput(projectDirPath, outputPath, output)
 
     // Replace mode. Delete existing README.md?
     if (replace === 'true') {
-      const readmeFile = await getReadmeFilePath(dirPath)
+      const readmeFile = await getReadmeFilePath(projectDirPath)
       if (readmeFile) {
         core.info(`❌ Replace mode active. Deleting README.md...`)
         unlinkSync(readmeFile)

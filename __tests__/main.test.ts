@@ -11,8 +11,9 @@ import {
 } from '../src/extension-meta'
 
 test('Test if action works normally', () => {
+  process.env['GITHUB_WORKSPACE'] = '.'
   process.env['INPUT_DIR_PATH'] = './__tests__/testTheme'
-  process.env['INPUT_OUTPUT_PATH'] = './__tests__/testTheme/readme.txt'
+  process.env['INPUT_OUTPUT_PATH'] = './readme.txt'
   const np = process.execPath
   const ip = path.join(__dirname, '..', 'lib', 'main.js')
   const options: cp.ExecFileSyncOptions = {

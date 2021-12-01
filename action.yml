@@ -7,14 +7,14 @@ branding:
   color: black
 inputs:
   dir_path:
-    description: 'The path to WordPress plugin/theme'
+    description: 'The path to WordPress plugin/theme directory'
     default: '.'
   replace:
     description: 'Delete existing README.md and put readme.txt instead'
-    default: true
+    default: false
   output_path:
-    description: 'Custom path where readme.txt should be placed'
+    description: 'Relative path to dir_path where readme.txt should be placed'
     default: './readme.txt'
 runs:
-      using: 'node14'
+      using: 'node12'
       main: 'dist/index.js'
