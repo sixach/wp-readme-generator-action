@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import {pluginHeaderNames, themeHeaderNames} from './common/names'
+import chalk from 'chalk'
 import fs from 'fs'
 import path from 'path'
 
@@ -158,6 +159,22 @@ export function getPluginHeaders(fileContent: string): MetaProperty {
 }
 
 /**
+ * Helper function to debug nicely all the values.
+ *
+ * @param meta {MetaProperty} An object with plugin/theme meta information
+ * @param headers {MetaProperty} An object with key/label information
+ */
+export function debugProjectMeta(
+  meta: MetaProperty,
+  headers: MetaProperty
+): void {
+  // Loop through the all project meta properties
+  for (const key in meta) {
+    core.info(`${chalk.whiteBright.bgBlue.bold(headers[key])}:\t ${meta[key]}`)
+  }
+}
+
+/**
  * Detects whether project type is plugin or theme by looking into directory content.
  *
  * @param dirPath {String} Path to the project directory
@@ -222,9 +239,11 @@ export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
 
     if (project.type === 'theme') {
       meta = getThemeHeaders(fileContent)
+      debugProjectMeta(meta, themeHeaderNames)
     }
     if (project.type === 'plugin') {
       meta = getPluginHeaders(fileContent)
+      debugProjectMeta(meta, pluginHeaderNames)
     }
 
     // Read readme file content
