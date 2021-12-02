@@ -211,7 +211,7 @@ exports.getPluginHeaders = getPluginHeaders;
 function debugProjectMeta(meta, headers) {
     // Loop through the all project meta properties
     for (const key in meta) {
-        core.info(`${chalk_1.default.whiteBright.bgBlue.bold(headers[key])}:\t ${meta[key]}`);
+        core.info(` • ${chalk_1.default.blue.bold(headers[key])}:\t ${meta[key]}`);
     }
 }
 exports.debugProjectMeta = debugProjectMeta;
@@ -274,10 +274,12 @@ function readProjectMeta(dirPath) {
             const fileContent = fs_1.default.readFileSync(project.file, 'utf8');
             if (project.type === 'theme') {
                 meta = getThemeHeaders(fileContent);
+                core.info(`\n${chalk_1.default.white.bgGray.bold('Theme info:')}\n`);
                 debugProjectMeta(meta, names_1.themeHeaderNames);
             }
             if (project.type === 'plugin') {
                 meta = getPluginHeaders(fileContent);
+                core.info(`\n${chalk_1.default.white.bgGray.bold('Plugin info:')}\n`);
                 debugProjectMeta(meta, names_1.pluginHeaderNames);
             }
             // Read readme file content

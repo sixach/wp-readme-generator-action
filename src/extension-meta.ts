@@ -170,7 +170,7 @@ export function debugProjectMeta(
 ): void {
   // Loop through the all project meta properties
   for (const key in meta) {
-    core.info(`${chalk.whiteBright.bgBlue.bold(headers[key])}:\t ${meta[key]}`)
+    core.info(` • ${chalk.blue.bold(headers[key])}:\t ${meta[key]}`)
   }
 }
 
@@ -239,10 +239,12 @@ export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
 
     if (project.type === 'theme') {
       meta = getThemeHeaders(fileContent)
+      core.info(`\n${chalk.white.bgGray.bold('Theme info:')}\n`)
       debugProjectMeta(meta, themeHeaderNames)
     }
     if (project.type === 'plugin') {
       meta = getPluginHeaders(fileContent)
+      core.info(`\n${chalk.white.bgGray.bold('Plugin info:')}\n`)
       debugProjectMeta(meta, pluginHeaderNames)
     }
 
