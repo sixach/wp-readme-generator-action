@@ -4,22 +4,23 @@ export const defaultHeaderMap: MetaProperty = {
   contributors: 'Contributors',
   donate: 'Donate link',
   tags: 'Tags',
+  description: 'Description',
   requires: 'Requires at least',
+  requiresPHP: 'Requires PHP',
+  version: 'Version',
   tested: 'Tested up to',
   stable: 'Stable tag',
   license: 'License',
-  licenseURI: 'License URI'
+  licenseURI: 'License URI',
+  textDomain: 'Text Domain',
+  domainPath: 'Domain Path',
+  author: 'Author',
+  authorURI: 'Author URI'
 }
 
 export const pluginHeaderNames: MetaProperty = {
   name: 'Plugin Name',
   pluginURI: 'Plugin URI',
-  version: 'Version',
-  description: 'Description',
-  author: 'Author',
-  authorURI: 'Author URI',
-  textDomain: 'Text Domain',
-  domainPath: 'Domain Path',
   network: 'Network',
   ...defaultHeaderMap
 }
@@ -27,14 +28,8 @@ export const pluginHeaderNames: MetaProperty = {
 export const themeHeaderNames: MetaProperty = {
   name: 'Theme Name',
   themeURI: 'Theme URI',
-  description: 'Description',
-  author: 'Author',
-  authorURI: 'Author URI',
-  version: 'Version',
   template: 'Template',
   status: 'Status',
-  textDomain: 'Text Domain',
-  domainPath: 'Domain Path',
   detailsURI: 'Details URI',
   ...defaultHeaderMap
 }

@@ -141,6 +141,7 @@ as background gradients directly from your theme.
     license: 'GNU General Public License v3 or later',
     licenseURI: 'http://www.gnu.org/licenses/gpl-3.0.html',
     requires: 'WordPress 5.6',
+    requiresPHP: '7.2',
     tested: '5.6'
   })
 })

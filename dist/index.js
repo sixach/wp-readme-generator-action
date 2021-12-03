@@ -12,14 +12,21 @@ exports.defaultHeaderMap = {
     contributors: 'Contributors',
     donate: 'Donate link',
     tags: 'Tags',
+    description: 'Description',
     requires: 'Requires at least',
+    requiresPHP: 'Requires PHP',
+    version: 'Version',
     tested: 'Tested up to',
     stable: 'Stable tag',
     license: 'License',
-    licenseURI: 'License URI'
+    licenseURI: 'License URI',
+    textDomain: 'Text Domain',
+    domainPath: 'Domain Path',
+    author: 'Author',
+    authorURI: 'Author URI'
 };
-exports.pluginHeaderNames = Object.assign({ name: 'Plugin Name', pluginURI: 'Plugin URI', version: 'Version', description: 'Description', author: 'Author', authorURI: 'Author URI', textDomain: 'Text Domain', domainPath: 'Domain Path', network: 'Network' }, exports.defaultHeaderMap);
-exports.themeHeaderNames = Object.assign({ name: 'Theme Name', themeURI: 'Theme URI', description: 'Description', author: 'Author', authorURI: 'Author URI', version: 'Version', template: 'Template', status: 'Status', textDomain: 'Text Domain', domainPath: 'Domain Path', detailsURI: 'Details URI' }, exports.defaultHeaderMap);
+exports.pluginHeaderNames = Object.assign({ name: 'Plugin Name', pluginURI: 'Plugin URI', network: 'Network' }, exports.defaultHeaderMap);
+exports.themeHeaderNames = Object.assign({ name: 'Theme Name', themeURI: 'Theme URI', template: 'Template', status: 'Status', detailsURI: 'Details URI' }, exports.defaultHeaderMap);
 
 
 /***/ }),
@@ -61,7 +68,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.readProjectMeta = exports.detectProjectType = exports.debugProjectMeta = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = exports.getReadmeContent = exports.getReadmeFilePath = void 0;
+exports.readProjectMeta = exports.detectProjectType = exports.validateMeta = exports.debugProjectMeta = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = exports.getReadmeContent = exports.getReadmeFilePath = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const names_1 = __nccwpck_require__(68);
 const chalk_1 = __importDefault(__nccwpck_require__(818));
@@ -216,6 +223,41 @@ function debugProjectMeta(meta, headers) {
 }
 exports.debugProjectMeta = debugProjectMeta;
 /**
+ * Validates if plugin/theme has correct meta information, also
+ * shows warnings in case if required fields are missing.
+ *
+ * @param meta {MetaProperty} An object with plugin/theme meta information
+ */
+function validateMeta(meta) {
+    /*
+     * WARNINGS
+     */
+    // If tested up to field is missing
+    if (!meta.tested) {
+        core.warning(`The "Tested up to" field is missing.`);
+    }
+    // If stable tag field is missing
+    if (!meta.stable) {
+        core.warning(`The "Stable tag" field is missing. Hint: If you treat /trunk/ as stable, put "Stable tag: trunk".`);
+    }
+    // If contributors field is missing
+    if (!meta.contributors) {
+        core.warning(`The "Contributors" field is missing.`);
+    }
+    /*
+     * NOTES
+     */
+    // If requires at least field is missing
+    if (!meta.requires) {
+        core.info(`The "Requires at least" field is missing. It should be defined here, or in your main plugin file.`);
+    }
+    // If requires PHP field is missing
+    if (!meta.requiresPHP) {
+        core.info(`The "Requires PHP" field is missing. It should be defined here, or in your main plugin file.`);
+    }
+}
+exports.validateMeta = validateMeta;
+/**
  * Detects whether project type is plugin or theme by looking into directory content.
  *
  * @param dirPath {String} Path to the project directory
@@ -282,6 +324,9 @@ function readProjectMeta(dirPath) {
                 core.info(`\n${chalk_1.default.white.bgGray.bold('Plugin info:')}\n`);
                 debugProjectMeta(meta, names_1.pluginHeaderNames);
             }
+            core.info(`\n`);
+            // Validate meta info
+            validateMeta(meta);
             // Read readme file content
             const readme = yield getReadmeContent(dirPath);
             if (readme)

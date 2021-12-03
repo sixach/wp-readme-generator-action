@@ -175,6 +175,53 @@ export function debugProjectMeta(
 }
 
 /**
+ * Validates if plugin/theme has correct meta information, also
+ * shows warnings in case if required fields are missing.
+ *
+ * @param meta {MetaProperty} An object with plugin/theme meta information
+ */
+export function validateMeta(meta: MetaProperty): void {
+  /*
+   * WARNINGS
+   */
+
+  // If tested up to field is missing
+  if (!meta.tested) {
+    core.warning(`The "Tested up to" field is missing.`)
+  }
+
+  // If stable tag field is missing
+  if (!meta.stable) {
+    core.warning(
+      `The "Stable tag" field is missing. Hint: If you treat /trunk/ as stable, put "Stable tag: trunk".`
+    )
+  }
+
+  // If contributors field is missing
+  if (!meta.contributors) {
+    core.warning(`The "Contributors" field is missing.`)
+  }
+
+  /*
+   * NOTES
+   */
+
+  // If requires at least field is missing
+  if (!meta.requires) {
+    core.info(
+      `The "Requires at least" field is missing. It should be defined here, or in your main plugin file.`
+    )
+  }
+
+  // If requires PHP field is missing
+  if (!meta.requiresPHP) {
+    core.info(
+      `The "Requires PHP" field is missing. It should be defined here, or in your main plugin file.`
+    )
+  }
+}
+
+/**
  * Detects whether project type is plugin or theme by looking into directory content.
  *
  * @param dirPath {String} Path to the project directory
@@ -247,7 +294,10 @@ export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
       core.info(`\n${chalk.white.bgGray.bold('Plugin info:')}\n`)
       debugProjectMeta(meta, pluginHeaderNames)
     }
+    core.info(`\n`)
 
+    // Validate meta info
+    validateMeta(meta)
     // Read readme file content
     const readme = await getReadmeContent(dirPath)
     if (readme) meta.readme = readme
