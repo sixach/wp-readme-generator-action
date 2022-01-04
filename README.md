@@ -1,10 +1,10 @@
-# WordPress Readme.txt Generator Action
+# ✨ WordPress Readme.txt Generator Action
 
 This action generates WordPress flavored readme.txt from Theme/Plugin metadata.
 
 Keeping two versions of README is no bueno. Basically, developers need to create one version of ```README.md``` for GitHub and another one for WordPress.org. So why bother? If you can create only one file and this action will do the rest for you.
 
-## Code in Main
+## Code in General
 
 > First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
 
