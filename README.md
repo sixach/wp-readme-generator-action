@@ -35,7 +35,7 @@ PASS  __tests__/main.test.ts
 Add the following step to your job.
 
 ```yml
-- uses: sixach/wp-readme-generator-action@latest
+- uses: sixach/wp-readme-generator-action@master
   with:
     # Optional, but recommended
     # Defaults to the current directory (`.`)
