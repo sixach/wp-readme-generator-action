@@ -1,0 +1,20 @@
+# action.yaml
+name: 'WordPress Readme.txt Generator'
+description: 'Creates the readme.txt file from plugin/theme metadata'
+author: 'Sixa'
+branding:
+  icon: chevron-right
+  color: black
+inputs:
+  dir_path:
+    description: 'The path to WordPress plugin/theme directory'
+    default: '.'
+  replace:
+    description: 'Delete existing README.md and put readme.txt instead'
+    default: false
+  output_path:
+    description: 'Relative path to dir_path where readme.txt should be placed'
+    default: './readme.txt'
+runs:
+      using: 'node12'
+      main: 'dist/index.js'

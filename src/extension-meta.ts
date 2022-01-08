@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
 import {pluginHeaderNames, themeHeaderNames} from './common/names'
+import chalk from 'chalk'
 import fs from 'fs'
 import path from 'path'
-import {stat} from 'fs/promises'
 
 export interface MetaProperty {
   [key: string]: string
@@ -11,6 +11,51 @@ export interface MetaProperty {
 export interface ProjectType {
   type: 'theme' | 'plugin'
   file: string
+}
+
+/**
+ * Helper function to find path to README file.
+ * @param dirPath {String} Directory where to look for readme file
+ * @returns {String|null} Path to README file if found, null otherwise
+ */
+export async function getReadmeFilePath(dirPath: string): Promise<fs.PathLike> {
+  // Check possible file names of README.md
+  const readmeFiles = [
+    path.join(dirPath, `README.md`),
+    path.join(dirPath, 'readme.md')
+  ]
+  for (const filename of readmeFiles) {
+    if (fs.existsSync(filename)) {
+      const entryStat = fs.statSync(filename)
+      if (entryStat.isFile()) {
+        return filename
+      }
+    }
+  }
+
+  // Nothing found
+  return ''
+}
+
+/**
+ * Reads the content of README.md file.
+ * The file name can be either README.md or readme.md (lowercase).
+ *
+ * @param dirPath {String} Path to the project directory
+ * @returns {String} README.md content
+ */
+export async function getReadmeContent(
+  dirPath: string
+): Promise<string | null> {
+  // Try to find a readme file
+  const readmeFile = await getReadmeFilePath(dirPath)
+  if (readmeFile) {
+    core.info(`👀 Reading the content of README.md...`)
+    return fs.readFileSync(readmeFile, 'utf8')
+  }
+
+  // Nothing found
+  return null
 }
 
 /**
@@ -114,6 +159,69 @@ export function getPluginHeaders(fileContent: string): MetaProperty {
 }
 
 /**
+ * Helper function to debug nicely all the values.
+ *
+ * @param meta {MetaProperty} An object with plugin/theme meta information
+ * @param headers {MetaProperty} An object with key/label information
+ */
+export function debugProjectMeta(
+  meta: MetaProperty,
+  headers: MetaProperty
+): void {
+  // Loop through the all project meta properties
+  for (const key in meta) {
+    core.info(` • ${chalk.blue.bold(headers[key])}:\t ${meta[key]}`)
+  }
+}
+
+/**
+ * Validates if plugin/theme has correct meta information, also
+ * shows warnings in case if required fields are missing.
+ *
+ * @param meta {MetaProperty} An object with plugin/theme meta information
+ */
+export function validateMeta(meta: MetaProperty): void {
+  /*
+   * WARNINGS
+   */
+
+  // If tested up to field is missing
+  if (!meta.tested) {
+    core.warning(`The "Tested up to" field is missing.`)
+  }
+
+  // If stable tag field is missing
+  if (!meta.stable) {
+    core.warning(
+      `The "Stable tag" field is missing. Hint: If you treat /trunk/ as stable, put "Stable tag: trunk".`
+    )
+  }
+
+  // If contributors field is missing
+  if (!meta.contributors) {
+    core.warning(`The "Contributors" field is missing.`)
+  }
+
+  /*
+   * NOTES
+   */
+
+  // If requires at least field is missing
+  if (!meta.requires) {
+    core.info(
+      `The "Requires at least" field is missing. It should be defined here, or in your main plugin file.`
+    )
+  }
+
+  // If requires PHP field is missing
+  if (!meta.requiresPHP) {
+    core.info(
+      `The "Requires PHP" field is missing. It should be defined here, or in your main plugin file.`
+    )
+  }
+}
+
+/**
  * Detects whether project type is plugin or theme by looking into directory content.
  *
  * @param dirPath {String} Path to the project directory
@@ -128,8 +236,11 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
   // Test if it's a theme or not
   const cssFile = path.join(dirPath, 'style.css')
   if (fs.existsSync(cssFile)) {
-    const entryStat = await stat(cssFile)
+    const entryStat = fs.statSync(cssFile)
     if (entryStat.isFile()) {
+      core.info(
+        `ℹ️ Theme detected! Extracting info from CSS file ${cssFile}...`
+      )
       return {
         type: 'theme',
         file: cssFile
@@ -144,8 +255,11 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
   ]
   for (const filename of pluginFiles) {
     if (fs.existsSync(filename)) {
-      const entryStat = await stat(filename)
+      const entryStat = fs.statSync(filename)
       if (entryStat.isFile()) {
+        core.info(
+          `ℹ️ Plugin detected! Extracting info from PHP file ${filename}...`
+        )
         return {
           type: 'plugin',
           file: filename
@@ -172,10 +286,21 @@ export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
 
     if (project.type === 'theme') {
       meta = getThemeHeaders(fileContent)
+      core.info(`\n${chalk.white.bgGray.bold('Theme info:')}\n`)
+      debugProjectMeta(meta, themeHeaderNames)
     }
     if (project.type === 'plugin') {
       meta = getPluginHeaders(fileContent)
+      core.info(`\n${chalk.white.bgGray.bold('Plugin info:')}\n`)
+      debugProjectMeta(meta, pluginHeaderNames)
     }
+    core.info(`\n`)
+
+    // Validate meta info
+    validateMeta(meta)
+    // Read readme file content
+    const readme = await getReadmeContent(dirPath)
+    if (readme) meta.readme = readme
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
