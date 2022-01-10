@@ -1,4 +1,6 @@
-Add vertical space to your page with the sixa Spacer Block.
+<!-- only:github/ --># Test Theme
+
+<!-- /only:github -->Add vertical space to your page with the sixa Spacer Block.
 The block is fully responsive and can be hidden specifically
 for any device (widescreen, desktop, tablet, mobile).
 Additionally, the Spacer Block supports background colors as well

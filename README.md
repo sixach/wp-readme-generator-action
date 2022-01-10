@@ -50,3 +50,20 @@ Add the following step to your job.
     # Defaults to the current directory (`./readme.txt`)
     output_path: ./readme.txt
 ```
+
+## Hiding Text
+
+In some cases, you might not want for text to appear in resulting `readme.txt`. For example, your README.md can contain instructions for developers. It might be useful for developers, but useless for anyone else. To remove the text, wrap it inside the `<!-- only:github/ -->` tags like so:
+
+```md
+# My Awesome Plugin
+
+Here goes your description.
+<!-- only:github/ -->
+## Development
+
+You'll need [Node.js](https://nodejs.org/) and [Composer](https://getcomposer.org/) installed
+on your computer in order to build this plugin.<!-- /only:github -->
+```
+
+It will hide the text from ordinary users.
