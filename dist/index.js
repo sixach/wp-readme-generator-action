@@ -75,6 +75,14 @@ const chalk_1 = __importDefault(__nccwpck_require__(818));
 const fs_1 = __importDefault(__nccwpck_require__(147));
 const path_1 = __importDefault(__nccwpck_require__(17));
 /**
+ * Helper function to remove all the content inside of <!-- only:github/ --> tags.
+ *
+ * @param fileContent Content to be parsed
+ */
+function removeGithubComments(fileContent) {
+    return fileContent.replace(/<!-- only:github\/ -->([\S\s]*?)<!-- \/only:github -->/gm, '');
+}
+/**
  * Helper function to find path to README file.
  * @param dirPath {String} Directory where to look for readme file
  * @returns {String|null} Path to README file if found, null otherwise
@@ -112,7 +120,7 @@ function getReadmeContent(dirPath) {
         const readmeFile = yield getReadmeFilePath(dirPath);
         if (readmeFile) {
             core.info(`👀 Reading the content of README.md...`);
-            return fs_1.default.readFileSync(readmeFile, 'utf8');
+            return removeGithubComments(fs_1.default.readFileSync(readmeFile, 'utf8'));
         }
         // Nothing found
         return null;

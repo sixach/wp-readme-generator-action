@@ -14,6 +14,18 @@ export interface ProjectType {
 }
 
 /**
+ * Helper function to remove all the content inside of <!-- only:github/ --> tags.
+ *
+ * @param fileContent Content to be parsed
+ */
+function removeGithubComments(fileContent: string): string {
+  return fileContent.replace(
+    /<!-- only:github\/ -->([\S\s]*?)<!-- \/only:github -->/gm,
+    ''
+  )
+}
+
+/**
  * Helper function to find path to README file.
  * @param dirPath {String} Directory where to look for readme file
  * @returns {String|null} Path to README file if found, null otherwise
@@ -51,7 +63,7 @@ export async function getReadmeContent(
   const readmeFile = await getReadmeFilePath(dirPath)
   if (readmeFile) {
     core.info(`👀 Reading the content of README.md...`)
-    return fs.readFileSync(readmeFile, 'utf8')
+    return removeGithubComments(fs.readFileSync(readmeFile, 'utf8'))
   }
 
   // Nothing found
