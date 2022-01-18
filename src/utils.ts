@@ -8,7 +8,7 @@ import {writeFileSync} from 'fs'
  * @param providedPath {String} Provided path to plugin/theme
  * @returns {String} Real path inside the Github workspace
  */
-export function retrieveDirPath(providedPath: string): string {
+export function retrieveDirPath(providedPath?: string): string {
   let githubWorkspacePath = process.env['GITHUB_WORKSPACE']
   if (!githubWorkspacePath) {
     throw new Error('GITHUB_WORKSPACE not defined')

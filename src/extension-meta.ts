@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
+import fs, {PathLike} from 'fs'
 import {pluginHeaderNames, themeHeaderNames} from './common/names'
 import chalk from 'chalk'
-import fs from 'fs'
 import path from 'path'
 
 export interface MetaProperty {
@@ -53,17 +53,15 @@ export async function getReadmeFilePath(dirPath: string): Promise<fs.PathLike> {
  * Reads the content of README.md file.
  * The file name can be either README.md or readme.md (lowercase).
  *
- * @param dirPath {String} Path to the project directory
+ * @param filePath {String} Path to the readme file
  * @returns {String} README.md content
  */
 export async function getReadmeContent(
-  dirPath: string
+  filePath: PathLike
 ): Promise<string | null> {
-  // Try to find a readme file
-  const readmeFile = await getReadmeFilePath(dirPath)
-  if (readmeFile) {
+  if (filePath) {
     core.info(`👀 Reading the content of README.md...`)
-    return removeGithubComments(fs.readFileSync(readmeFile, 'utf8'))
+    return removeGithubComments(fs.readFileSync(filePath, 'utf8'))
   }
 
   // Nothing found
@@ -286,22 +284,25 @@ export async function detectProjectType(dirPath: string): Promise<ProjectType> {
 /**
  * Detect project type and then call appropriate function to get theme/plugin meta.
  *
- * @param dirPath {String} Path to the project directory
+ * @param filePath {String} Path to the project main file
+ * @param projectType {'theme'|'plugin'} Type of the project, can be either 'theme' or 'plugin'
  * @returns {MetaProperty} Parsed meta properties of the theme/plugin
  */
-export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
+export async function readProjectMeta(
+  filePath: string,
+  projectType: string
+): Promise<MetaProperty> {
   let meta: MetaProperty = {}
 
   try {
-    const project = await detectProjectType(dirPath)
-    const fileContent = fs.readFileSync(project.file, 'utf8')
+    const fileContent = fs.readFileSync(filePath, 'utf8')
 
-    if (project.type === 'theme') {
+    if (projectType === 'theme') {
       meta = getThemeHeaders(fileContent)
       core.info(`\n${chalk.white.bgGray.bold('Theme info:')}\n`)
       debugProjectMeta(meta, themeHeaderNames)
     }
-    if (project.type === 'plugin') {
+    if (projectType === 'plugin') {
       meta = getPluginHeaders(fileContent)
       core.info(`\n${chalk.white.bgGray.bold('Plugin info:')}\n`)
       debugProjectMeta(meta, pluginHeaderNames)
@@ -310,9 +311,6 @@ export async function readProjectMeta(dirPath: string): Promise<MetaProperty> {
 
     // Validate meta info
     validateMeta(meta)
-    // Read readme file content
-    const readme = await getReadmeContent(dirPath)
-    if (readme) meta.readme = readme
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
