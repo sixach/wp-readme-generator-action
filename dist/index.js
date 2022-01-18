@@ -70,9 +70,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.readProjectMeta = exports.detectProjectType = exports.validateMeta = exports.debugProjectMeta = exports.getPluginHeaders = exports.getThemeHeaders = exports.getFileHeaders = exports.getReadmeContent = exports.getReadmeFilePath = void 0;
 const core = __importStar(__nccwpck_require__(186));
+const fs_1 = __importDefault(__nccwpck_require__(147));
 const names_1 = __nccwpck_require__(68);
 const chalk_1 = __importDefault(__nccwpck_require__(818));
-const fs_1 = __importDefault(__nccwpck_require__(147));
 const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * Helper function to remove all the content inside of <!-- only:github/ --> tags.
@@ -111,16 +111,14 @@ exports.getReadmeFilePath = getReadmeFilePath;
  * Reads the content of README.md file.
  * The file name can be either README.md or readme.md (lowercase).
  *
- * @param dirPath {String} Path to the project directory
+ * @param filePath {String} Path to the readme file
  * @returns {String} README.md content
  */
-function getReadmeContent(dirPath) {
+function getReadmeContent(filePath) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Try to find a readme file
-        const readmeFile = yield getReadmeFilePath(dirPath);
-        if (readmeFile) {
+        if (filePath) {
             core.info(`👀 Reading the content of README.md...`);
-            return removeGithubComments(fs_1.default.readFileSync(readmeFile, 'utf8'));
+            return removeGithubComments(fs_1.default.readFileSync(filePath, 'utf8'));
         }
         // Nothing found
         return null;
@@ -313,21 +311,21 @@ exports.detectProjectType = detectProjectType;
 /**
  * Detect project type and then call appropriate function to get theme/plugin meta.
  *
- * @param dirPath {String} Path to the project directory
+ * @param filePath {String} Path to the project main file
+ * @param projectType {'theme'|'plugin'} Type of the project, can be either 'theme' or 'plugin'
  * @returns {MetaProperty} Parsed meta properties of the theme/plugin
  */
-function readProjectMeta(dirPath) {
+function readProjectMeta(filePath, projectType) {
     return __awaiter(this, void 0, void 0, function* () {
         let meta = {};
         try {
-            const project = yield detectProjectType(dirPath);
-            const fileContent = fs_1.default.readFileSync(project.file, 'utf8');
-            if (project.type === 'theme') {
+            const fileContent = fs_1.default.readFileSync(filePath, 'utf8');
+            if (projectType === 'theme') {
                 meta = getThemeHeaders(fileContent);
                 core.info(`\n${chalk_1.default.white.bgGray.bold('Theme info:')}\n`);
                 debugProjectMeta(meta, names_1.themeHeaderNames);
             }
-            if (project.type === 'plugin') {
+            if (projectType === 'plugin') {
                 meta = getPluginHeaders(fileContent);
                 core.info(`\n${chalk_1.default.white.bgGray.bold('Plugin info:')}\n`);
                 debugProjectMeta(meta, names_1.pluginHeaderNames);
@@ -335,10 +333,6 @@ function readProjectMeta(dirPath) {
             core.info(`\n`);
             // Validate meta info
             validateMeta(meta);
-            // Read readme file content
-            const readme = yield getReadmeContent(dirPath);
-            if (readme)
-                meta.readme = readme;
         }
         catch (error) {
             if (error instanceof Error)
@@ -394,21 +388,25 @@ const fs_1 = __nccwpck_require__(147);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const dirPath = core.getInput('dir_path');
-            const projectDirPath = (0, utils_1.retrieveDirPath)(dirPath);
+            const inputPath = core.getInput('input_path');
+            const projectType = core.getInput('project_type');
             const outputPath = core.getInput('output_path');
             const replace = core.getInput('replace');
-            const vars = yield (0, extension_meta_1.readProjectMeta)(projectDirPath);
+            const dirPath = (0, utils_1.retrieveDirPath)();
+            const project = yield (0, extension_meta_1.detectProjectType)(dirPath);
+            const vars = yield (0, extension_meta_1.readProjectMeta)(inputPath || project.file, projectType || project.type);
+            // Read readme file content
+            const readmeFile = yield (0, extension_meta_1.getReadmeFilePath)(dirPath);
+            const readme = yield (0, extension_meta_1.getReadmeContent)(readmeFile);
+            if (readme)
+                vars.readme = readme;
             const output = (0, templater_1.templater)(vars);
             // Write the resulting readme.txt
-            (0, utils_1.writeOutput)(projectDirPath, outputPath, output);
+            (0, utils_1.writeOutput)(dirPath, outputPath, output);
             // Replace mode. Delete existing README.md?
-            if (replace === 'true') {
-                const readmeFile = yield (0, extension_meta_1.getReadmeFilePath)(projectDirPath);
-                if (readmeFile) {
-                    core.info(`❌ Replace mode active. Deleting README.md...`);
-                    (0, fs_1.unlinkSync)(readmeFile);
-                }
+            if (replace === 'true' && readmeFile) {
+                core.info(`❌ Replace mode active. Deleting README.md...`);
+                (0, fs_1.unlinkSync)(readmeFile);
             }
         }
         catch (error) {

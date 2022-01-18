@@ -37,9 +37,13 @@ Add the following step to your job.
 ```yml
 - uses: sixach/wp-readme-generator-action@master
   with:
-    # Optional, but recommended
-    # Defaults to the current directory (`.`)
-    dir_path: .
+    # Optional. If not specified, tries to find main file in current directory.
+    # Defaults to plugin-name.php or index.php for plugin, style.css for theme.
+    input_path: ./plugin-name.php
+
+    # Optional. If not specified, tries to depect project type.
+    # Can be either 'theme' or 'plugin'
+    project_type: plugin
 
     # Optional. Delete existing README.md and place readme.txt instead
     # Defaults to true

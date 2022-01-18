@@ -4,15 +4,17 @@ import * as path from 'path'
 import {expect, test} from '@jest/globals'
 import {formatter} from '../src/templater'
 import {
+  getReadmeContent,
+  getReadmeFilePath,
   getFileHeaders,
   detectProjectType,
   readProjectMeta,
   MetaProperty
 } from '../src/extension-meta'
+import {retrieveDirPath} from '../src/utils'
 
 test('Test if action works normally', () => {
-  process.env['GITHUB_WORKSPACE'] = '.'
-  process.env['INPUT_DIR_PATH'] = './__tests__/testTheme'
+  process.env['GITHUB_WORKSPACE'] = './__tests__/testTheme'
   process.env['INPUT_OUTPUT_PATH'] = './readme.txt'
   const np = process.execPath
   const ip = path.join(__dirname, '..', 'lib', 'main.js')
@@ -20,6 +22,8 @@ test('Test if action works normally', () => {
     env: process.env
   }
   console.log(cp.execFileSync(np, [ip], options).toString())
+  // Restore GitHub Workspace
+  process.env['GITHUB_WORKSPACE'] = '.'
 })
 
 // Should provide header map
@@ -85,8 +89,13 @@ test('Should throw an error if directory does not exist', async () => {
 
 // Should return correct project meta - testPlugin
 test('Should return correct project meta - testPlugin', async () => {
-  const input: string = './__tests__/testPlugin'
-  await expect(readProjectMeta(input)).resolves.toStrictEqual({
+  const dir = './__tests__/testPlugin'
+  const dirPath = retrieveDirPath(dir)
+  const project = await detectProjectType(dirPath)
+
+  await expect(
+    readProjectMeta(project.file, project.type)
+  ).resolves.toStrictEqual({
     name: 'Sixa -  Test Plugin',
     version: '1.1.5',
     description:
@@ -100,8 +109,13 @@ test('Should return correct project meta - testPlugin', async () => {
 
 // Should return correct project meta - testPluginIndex
 test('Should return correct project meta - testPluginIndex', async () => {
-  const input: string = './__tests__/testPluginIndex'
-  await expect(readProjectMeta(input)).resolves.toStrictEqual({
+  const dir = './__tests__/testPluginIndex'
+  const dirPath = retrieveDirPath(dir)
+  const project = await detectProjectType(dirPath)
+
+  await expect(
+    readProjectMeta(project.file, project.type)
+  ).resolves.toStrictEqual({
     name: 'Sixa -  Test Plugin with Index.php',
     version: '1.1.5',
     description:
@@ -115,21 +129,14 @@ test('Should return correct project meta - testPluginIndex', async () => {
 
 // Should return correct project meta - testTheme
 test('Should return correct project meta - testTheme', async () => {
-  const input: string = './__tests__/testTheme'
-  await expect(readProjectMeta(input)).resolves.toStrictEqual({
+  const dir = './__tests__/testTheme'
+  const dirPath = retrieveDirPath(dir)
+  const project = await detectProjectType(dirPath)
+
+  await expect(
+    readProjectMeta(project.file, project.type)
+  ).resolves.toStrictEqual({
     name: 'Sixa Theme',
-    readme: `Add vertical space to your page with the sixa Spacer Block.
-The block is fully responsive and can be hidden specifically
-for any device (widescreen, desktop, tablet, mobile).
-Additionally, the Spacer Block supports background colors as well
-as background gradients directly from your theme.
-
-## Installation
-### Minimum Requirements
-
-* PHP version 7.3 or greater.
-* MySQL version 5.6 or greater or MariaDB version 10.0 or greater.
-* WordPress version 5.7 or greater.`,
     themeURI: 'https://sixa.ch',
     description: 'Official theme for the sixa.ch website.',
     author: 'sixa AG',
@@ -144,6 +151,26 @@ as background gradients directly from your theme.
     requiresPHP: '7.2',
     tested: '5.6'
   })
+})
+
+test('Should read content of README.md file', async () => {
+  const dir = './__tests__/testTheme'
+  const dirPath = retrieveDirPath(dir)
+  const readmeFile = await getReadmeFilePath(dirPath)
+
+  await expect(getReadmeContent(readmeFile)).resolves
+    .toStrictEqual(`Add vertical space to your page with the sixa Spacer Block.
+The block is fully responsive and can be hidden specifically
+for any device (widescreen, desktop, tablet, mobile).
+Additionally, the Spacer Block supports background colors as well
+as background gradients directly from your theme.
+
+## Installation
+### Minimum Requirements
+
+* PHP version 7.3 or greater.
+* MySQL version 5.6 or greater or MariaDB version 10.0 or greater.
+* WordPress version 5.7 or greater.`)
 })
 
 test('Should format README.md content properly', async () => {

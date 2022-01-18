@@ -6,9 +6,10 @@ branding:
   icon: chevron-right
   color: black
 inputs:
-  dir_path:
-    description: 'The path to WordPress plugin/theme directory'
-    default: '.'
+  input_path:
+    description: 'Relative path to WordPress plugin/theme main file to get metadata from'
+  project_type:
+    description: 'Type of the project - can be either `theme` or `plugin`'
   replace:
     description: 'Delete existing README.md and put readme.txt instead'
     default: false
