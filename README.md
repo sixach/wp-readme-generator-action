@@ -35,7 +35,7 @@ PASS  __tests__/main.test.ts
 Add the following step to your job.
 
 ```yml
-- uses: sixach/wp-readme-generator-action@master
+- uses: sixach/wp-readme-generator-action@v1.1
   with:
     # Optional. If not specified, tries to find main file in current directory.
     # Defaults to plugin-name.php or index.php for plugin, style.css for theme.
