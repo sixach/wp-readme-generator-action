@@ -1,12 +1,60 @@
 # ✨ WordPress Readme.txt Generator Action
 
-This action generates WordPress flavored readme.txt from Theme/Plugin metadata.
+This action generates WordPress flavored readme.txt from Theme/Plugin metadata. 
 
-Keeping two versions of README is no bueno. Basically, developers need to create one version of ```README.md``` for GitHub and another one for WordPress.org. So why bother? If you can create only one file and this action will do the rest for you.
+Every public plugin or theme is required to provide a so-called **“readme.txt” text file**. This is required because the repository parses it with Markdown language and draws all appropiate information from it, which is then displayed on the public repository. The header of that file also controls all aspects of the title, tagging, author, donate link etc. for your plugin or theme.
 
-## Code in General
+Readme.txt file is written using a customized version of Markdown syntax, which differs from original one. Because of this, the file itself is recognizable by [WordPress.org](https://wordpress.org/) only, while on any other website such as Github, Bitbucket, AWS, Gitlab etc. will be shown as a plain text. This creates a burden for developers of keeping two different versions of the same readme file in the repository: one for GitHub/Bitbucket/Gitlab, another for WordPress.org.
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
+## How This Action Works
+
+![How This Action Works](./.screenshots/diagram.png)
+
+The [wp-readme-generator-action](https://github.com/sixach/wp-readme-generator-action) generates readme.txt in 3 simple steps. It takes a normal [README.md](http://README.md) as the starting point and modifies it in a way, that is understable by WordPress.org.
+
+**Step 1**: extract information about plugin/theme from php/css file.
+
+**Step 2**: add this information as a header to output readme.txt file
+
+**Step 3**: replace markdown headings with WP-style headings (`== Heading ==` etc.)
+
+A resulting output is written to readme.txt file.
+
+### Hiding Development Instructions From Ordinary Users
+
+Your readme may contain instructions for developers, such as how to install dependencies, how to build production release and so on. For example:
+
+```markdown
+## Development
+
+You'll need Node.js and Composer installed on your computer in order to build this theme.
+
+- Download or fork the repository.
+- Run `npm install` to install NPM dependencies
+- Run `npm run dev` command to compile and watch source files for changes while developing.
+- Run `composer install` to install composer dependencies
+```
+
+Obviously, the best place for such instructions is Github. Unlikely you might want to include it into production readme.txt which ships with every public release on WordPress.org.
+
+To exclude chunks of text, wrap them into `<!— only:github/ —>Text to exclude<!— /only:github —>` comment. The text will be removed from final output.
+
+```markdown
+<!— only:github/ —>
+## Development
+
+You'll need Node.js and Composer installed on your computer in order to build this theme.
+
+- Download or fork the repository.
+- Run `npm install` to install NPM dependencies
+- Run `npm run dev` command to compile and watch source files for changes while developing.
+- Run `composer install` to install composer dependencies
+<!— /only:github —>
+```
+
+## Development
+
+First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
 
 Install the dependencies  
 ```bash
@@ -30,7 +78,7 @@ PASS  __tests__/main.test.ts
 ...
 ```
 
-## Usage
+## Typical Usage
 
 Add the following step to your job.
 
@@ -54,20 +102,3 @@ Add the following step to your job.
     # Defaults to the current directory (`./readme.txt`)
     output_path: ./readme.txt
 ```
-
-## Hiding Text
-
-In some cases, you might not want for text to appear in resulting `readme.txt`. For example, your README.md can contain instructions for developers. It might be useful for developers, but useless for anyone else. To remove the text, wrap it inside the `<!-- only:github/ -->` tags like so:
-
-```md
-# My Awesome Plugin
-
-Here goes your description.
-<!-- only:github/ -->
-## Development
-
-You'll need [Node.js](https://nodejs.org/) and [Composer](https://getcomposer.org/) installed
-on your computer in order to build this plugin.<!-- /only:github -->
-```
-
-It will hide the text from ordinary users.
