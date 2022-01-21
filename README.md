@@ -10,13 +10,11 @@ Readme.txt file is written using a customized version of Markdown syntax, which 
 
 ![How This Action Works](./.screenshots/diagram.png)
 
-The [wp-readme-generator-action](https://github.com/sixach/wp-readme-generator-action) generates readme.txt in 3 simple steps. It takes a normal [README.md](http://README.md) as the starting point and modifies it in a way, that is understable by WordPress.org.
+The [wp-readme-generator-action](https://github.com/sixach/wp-readme-generator-action) generates readme.txt in 3 simple steps. It takes a normal README.md as the starting point and modifies it in a way, that is understable by WordPress.org.
 
-**Step 1**: extract information about plugin/theme from php/css file.
-
-**Step 2**: add this information as a header to output readme.txt file
-
-**Step 3**: replace markdown headings with WP-style headings (`== Heading ==` etc.)
+- **Step 1**: extract information about plugin/theme from php/css file.
+- **Step 2**: add this information as a header to output readme.txt file
+- **Step 3**: replace markdown headings with WP-style headings (`== Heading ==` etc.)
 
 A resulting output is written to readme.txt file.
 
